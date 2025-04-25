@@ -1,30 +1,36 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_db, init_db, engine
-from app.schemas import TodoCreate, TodoResponse
-from app.crud import get_todos, create_todo
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.crud_route import router
+from app.database import init_db, engine
+from fastapi.staticfiles import StaticFiles
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Инициализация БД при старте
+    # Инициализация
     await init_db()
     yield
-    # Очистка при завершении
+    # Очистка
     await engine.dispose()
 
 
 app = FastAPI(title="Legendary todo list", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/todos", response_model=list[TodoResponse])
-async def read_todos(
-    skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)
-):
-    return await get_todos(db, skip=skip, limit=limit)
+app.include_router(router)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-@app.post("/todos", response_model=TodoResponse)
-async def add_todo(todo: TodoCreate, db: AsyncSession = Depends(get_db)):
-    return await create_todo(db, todo.model_dump())
+@app.get("/")
+async def read_index():
+    from fastapi.responses import FileResponse
+
+    return FileResponse("static/index.html")

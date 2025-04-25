@@ -1,15 +1,22 @@
 from pydantic import BaseModel
 
 
-class TodoCreate(BaseModel):
+class TodoBase(BaseModel):
     title: str
     completed: bool = False
 
 
-class TodoResponse(BaseModel):
+class TodoCreate(TodoBase):
+    pass
+
+
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    completed: bool | None = None
+
+
+class TodoResponse(TodoBase):
     id: int
-    title: str
-    completed: bool
 
     class Config:
         from_attributes = True
