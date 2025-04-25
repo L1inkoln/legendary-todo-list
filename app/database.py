@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
 
-engine = create_async_engine("sqlite+aiosqlite:///./todo.db", echo=True)
+engine = create_async_engine("sqlite+aiosqlite:///./todo.db")
 
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
